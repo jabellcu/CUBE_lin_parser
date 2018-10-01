@@ -74,14 +74,20 @@ class line:
             
             if attrs_section:
                 k, _, v = p.partition('=')
-                line_attrs.update({k.strip(): v.strip()})
+                try:
+                    line_attrs.update({k.strip(): float(v.strip())})
+                except:
+                    line_attrs.update({k.strip(): v.strip()})
                 
             else:
                 p = re.sub('^N\s*=\s*', '', p)
                 
                 if '=' in p:
                     k, _, v = p.partition('=')
-                    node_attrs.update({k.strip(): v.strip()})
+                    try:
+                        node_attrs.update({k.strip(): float(v.strip())})
+                    except:
+                        node_attrs.update({k.strip(): v.strip()})
                 
                 else:
                     if n:
