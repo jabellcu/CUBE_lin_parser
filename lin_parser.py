@@ -98,14 +98,14 @@ class line:
 
 class system:
     """
-    Simple system class. A system is a set of lines.
+    Simple system class. A system is a number of lines.
     """
     
     def __init__(self, lines):
         self.lines = lines
     
     def __str__(self):
-        msg = f'System with {len(self.lines)} lines.'
+        msg = f'System with {len(self.lines.keys())} lines.'
         if hasattr(self, 'comments'):
             msg += f'\n{self.comments}'
         return msg
@@ -116,6 +116,8 @@ class system:
         
         records = line_re.findall(string)
         lines = set([line.from_string(r) for r in records])
+        # Assumes all lines have a NAME, and that this is unique.
+        lines = {l.NAME: l for l in lines}
         
         return lines
     
