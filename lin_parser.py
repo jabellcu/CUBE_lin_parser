@@ -102,6 +102,12 @@ class system:
     def __init__(self, lines):
         self.lines = lines
     
+    def __str__(self):
+        msg = 'System with {len(self.lines)} lines.'
+        if hasattr(self, 'comments'):
+            msg += f'\n{self.comments}'
+        return msg
+
     @staticmethod
     def _extract_lines(string, line_pat=r'(?s)LINE (.*?)(?=LINE|;|\Z)'):
         line_re = re.compile(line_pat)
