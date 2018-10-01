@@ -91,9 +91,13 @@ class line:
                 
                 else:
                     if n:
-                        # Add a node with the number and attrs read so far
+                        # Add the previous node, with the attrs read so far
                         nodes.append(node(n, **node_attrs))
                         node_attrs = {}
+
+                        if not parts:
+                            # Add the last node if there are no more attrs
+                            nodes.append(node(p))
                     
                     n = p  # Set the new node for future attrs to be read
         
