@@ -50,8 +50,10 @@ class line:
         return [node for node in self.nodes if node.stopping]
 
     def __str__(self):
-        return '{}, with {} nodes and {} stops'.format(
-                self.attrs, len(self.nodes), len(self.stops))
+        msg = 'Line with {} nodes (of which {} are stops).'.format(
+                len(self.nodes), len(self.stops))
+        msg += f'\n{self.attrs}'
+        return msg
     
     @staticmethod
     def from_string(string):
@@ -103,7 +105,7 @@ class system:
         self.lines = lines
     
     def __str__(self):
-        msg = 'System with {len(self.lines)} lines.'
+        msg = f'System with {len(self.lines)} lines.'
         if hasattr(self, 'comments'):
             msg += f'\n{self.comments}'
         return msg
