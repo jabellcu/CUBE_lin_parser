@@ -120,7 +120,7 @@ class system:
         return lines
     
     @staticmethod
-    def _extract_comments(string, comment_pat=r'(?s);.*?(?=LINE|;|\Z)'):
+    def _extract_comments(string, comment_pat=r'(?s);.*?(?=LINE|\Z)'):
         comment_re = re.compile(comment_pat)
         
         comments = comment_re.findall(string)
