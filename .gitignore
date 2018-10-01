@@ -1,0 +1,44 @@
+# locks and backups
+*.lock
+*.bak
+Thumbs.db
+
+# No subfolders
+*/*
+
+# No data
+*.txt
+*.csv
+*.xls*
+*.zip
+*.lin
+
+# No outputs
+*.jpg
+*.png
+
+# No documents
+*.PNG
+*.html
+*.ppt*
+*.xls*
+*.doc*
+*.pdf
+
+# No shortcuts
+*.lnk
+
+# No GIS
+*.CPG
+*.cpg
+*.dbf
+*.prj
+*.shp
+*.shx
+*.sbx
+*.sbn
+*.xml
+*.lyr
+*.mxd
+schema.ini
+
