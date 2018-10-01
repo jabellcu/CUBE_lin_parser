@@ -43,6 +43,15 @@ class line:
         '''Returns a dictionary with user-defined attributes.'''
         return {k:v for k,v in self.__dict__.items()
                 if '_' not in k and 'nodes' != k}
+
+    @property
+    def stops(self):
+        '''Returns a list of the nodes that are actual stops'''
+        return [node for node in self.nodes if node.stopping]
+
+    def __str__(self):
+        return '{}, with {} nodes and {} stops'.format(
+                self.attrs, len(self.nodes), len(self.stops))
     
     @staticmethod
     def from_string(string):
