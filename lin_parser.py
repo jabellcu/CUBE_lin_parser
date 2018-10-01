@@ -69,23 +69,23 @@ class line:
         while parts:
             p = parts.pop(0)
             
-            if bool(re.search('N\s*=', p)):
+            if bool(re.search('N(?:ODES)?\s*=', p)):
                 attrs_section = False
             
             if attrs_section:
                 k, _, v = p.partition('=')
                 try:
-                    line_attrs.update({k.strip(): float(v.strip())})
+                    line_attrs.update({k.strip(): eval(v.strip())})
                 except:
                     line_attrs.update({k.strip(): v.strip()})
                 
             else:
-                p = re.sub('^N\s*=\s*', '', p)
+                p = re.sub('^N(?:ODES)?\s*=\s*', '', p)
                 
                 if '=' in p:
                     k, _, v = p.partition('=')
                     try:
-                        node_attrs.update({k.strip(): float(v.strip())})
+                        node_attrs.update({k.strip(): eval(v.strip())})
                     except:
                         node_attrs.update({k.strip(): v.strip()})
                 
