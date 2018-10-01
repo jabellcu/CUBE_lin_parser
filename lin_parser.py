@@ -37,6 +37,12 @@ class line:
     def __init__(self, nodes, **kwargs):
         self.nodes = nodes  # a list of node objects
         self.__dict__.update(**kwargs)
+
+    @property
+    def attrs(self):
+        '''Returns a dictionary with user-defined attributes.'''
+        return {k:v for k,v in self.__dict__.items()
+                if '_' not in k and 'nodes' != k}
     
     @staticmethod
     def from_string(string):
