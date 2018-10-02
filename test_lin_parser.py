@@ -19,16 +19,16 @@ class TestNode(unittest.TestCase):
     def test_print(self):
         with patch('sys.stdout', new=StringIO()) as fakeOutput:
             print(self.node_num_stop)
-            self.assertEqual(fakeOutput.getvalue().strip(), '7730, {}')
+            self.assertEqual(fakeOutput.getvalue().strip(), '7730')
         with patch('sys.stdout', new=StringIO()) as fakeOutput:
             print(self.node_num_pass)
-            self.assertEqual(fakeOutput.getvalue().strip(), '-7730, {}')
+            self.assertEqual(fakeOutput.getvalue().strip(), '-7730')
         with patch('sys.stdout', new=StringIO()) as fakeOutput:
             print(self.node_str_stop)
-            self.assertEqual(fakeOutput.getvalue().strip(), '7730, {}')
+            self.assertEqual(fakeOutput.getvalue().strip(), '7730')
         with patch('sys.stdout', new=StringIO()) as fakeOutput:
             print(self.node_str_pass)
-            self.assertEqual(fakeOutput.getvalue().strip(), '-7730, {}')
+            self.assertEqual(fakeOutput.getvalue().strip(), '-7730')
             
     def test_ID(self):
         for n in self.test_nodes:

@@ -25,9 +25,18 @@ class node:
         return {k: v for k, v in self.__dict__.items()
                 if '_' not in k and 'ID' != k and 'stopping' != k}
 
-    def __str__(self):
+    def __repr__(self):
+        '''Object's summary.'''
         return '{}{}, {}'.format('-' if not self.stopping else '', self.ID,
                                  self.attrs)
+
+    def __str__(self):
+        txt_node = '{}{}'.format('-' if not self.stopping else '', self.ID,)
+        if self.attrs:
+            txt_attrs = ', '.join([f'{k}={v}' for k, v in self.attrs.items()])
+            return ', '.join([txt_node, txt_attrs])
+        else:
+            return txt_node
 
 
 class line:
@@ -51,10 +60,18 @@ class line:
         '''Returns a list of the nodes that are actual stops'''
         return [node for node in self.nodes if node.stopping]
 
-    def __str__(self):
+    def __repr__(self):
+        '''Object's summary.'''
         txt = 'Line with {} nodes (of which {} are stops).'.format(
                 len(self.nodes), len(self.stops))
         txt += f'\n{self.attrs}'
+        return txt
+
+    def __str__(self):
+        txt_attrs = ', '.join([f'{k}={v}' for k, v in self.attrs.items()])
+        txt_nodes = ', '.join(str(n) for n in self.nodes)
+        txt = ', '.join([txt_attrs, txt_nodes])
+        txt = txt.replace(', TF=', ',\n\tTF=')  # prettify
         return txt
 
     @staticmethod
@@ -122,14 +139,20 @@ class system:
         self.lines = lines
 
     def __repr__(self):
+        '''Object's summary.'''
         txt = f'System with {len(self.lines.keys())} lines.'
         if hasattr(self, 'comments'):
             txt += f'\n{self.comments}'
         return txt
 
     def __str__(self):
-        '''Representation as the file itself'''
-        pass
+        '''Representation as the file itself.'''
+        if hasattr(self, 'comments'):
+            txt = '\n'.join(self.comments)
+        else:
+            txt = ''
+        txt += '\n'.join([str(ln) for ln in self.lines.values()])
+        return txt
 
     @staticmethod
     def _extract_lines(string, line_pat=r'(?s)LINE (.*?)(?=LINE|;|\Z)'):
