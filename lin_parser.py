@@ -57,8 +57,12 @@ class line:
     
     @staticmethod
     def from_string(string):
-        parts = [x.strip() for x in string.split(',')]  # clean
-        
+
+        string = string.replace('\n', '')  # Clean
+        # src for this amazing magic:
+        # https://stackoverflow.com/a/16710842/2802352
+        parts = re.findall(r'(?:[^,"]|"(?:\\.|[^"])*")+', string)
+
         nodes = []
         line_attrs = {}
         node_attrs = {}
