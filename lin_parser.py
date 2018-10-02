@@ -51,6 +51,7 @@ class line:
 
     # This class variable allows to update all lines easily if needed
     unquoted = ['T', 'F']
+    NodeLabel = 'N'  # Or 'NODE'
 
     @property
     def attrs(self):
@@ -72,6 +73,7 @@ class line:
 
     def __str__(self):
 
+        # String attributes are quotes, with exceptions
         formatted_attrs = []
         for k, v in self.attrs.items():
             if isinstance(v, str) and v not in self.unquoted:
@@ -81,7 +83,21 @@ class line:
             formatted_attrs.append(f'{k}={f}')
 
         txt_attrs = ', '.join(formatted_attrs)
-        txt_nodes = ', '.join(str(n) for n in self.nodes)
+
+        # First nodes and nodes after attributes are labeled
+        formatted_nodes = []
+        first_node = True
+        for n in self.nodes:
+            if first_node:
+                formatted_nodes.append(f'{self.NodeLabel}={n}')
+                first_node = False
+            else:
+                formatted_nodes.append(f'{n}')
+
+            if n.attrs:
+                first_node = True
+
+        txt_nodes = ', '.join(formatted_nodes)
 
         txt = 'LINE {}'.format(', '.join([txt_attrs, txt_nodes]))
         txt = txt.replace(', TF=', ',\n\tTF=')  # prettify
