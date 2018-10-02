@@ -68,16 +68,23 @@ class line:
         return txt
 
     def __str__(self):
-        txt_attrs = ', '.join([f'{k}={v}' for k, v in self.attrs.items()])
+        txt_attrs = ', '.join(
+                [f'''{k}={f'"{v}"' if isinstance(v, str) else v}'''
+                 for k, v in self.attrs.items()])
         txt_nodes = ', '.join(str(n) for n in self.nodes)
-        txt = ', '.join([txt_attrs, txt_nodes])
+
+        txt = 'LINE {}'.format(', '.join([txt_attrs, txt_nodes]))
         txt = txt.replace(', TF=', ',\n\tTF=')  # prettify
+
         return txt
 
     @staticmethod
     def from_string(string):
 
-        string = string.replace('\n', '')  # Clean
+        # Clean first:
+        string = string.replace('\n', '')
+        string = re.sub(r'\ALINE\s+', '', string)
+
         # src for this amazing magic:
         # https://stackoverflow.com/a/16710842/2802352
         parts = re.findall(r'(?:[^,"]|"(?:\\.|[^"])*")+', string)
@@ -92,27 +99,29 @@ class line:
         while parts:
             p = parts.pop(0)
 
+            # Clean:
+            k, _, v = [ part.strip() for part in p.partition('=')]
+            try:
+                # For numbers
+                v = ast.literal_eval(v)
+            except (ValueError, SyntaxError) as e:
+                # For strings, make sure they are enclosed in double quotes:
+                v = f'"{v}"'
+                v = ast.literal_eval(v)
+
             if bool(re.search('N(?:ODES)?\s*=', p)):
                 attrs_section = False
 
             if attrs_section:
-                k, _, v = p.partition('=')
                 if k and v:
-                    try:
-                        line_attrs.update({k.strip(): ast.literal_eval(v)})
-                    except ValueError:
-                        line_attrs.update({k.strip(): v.strip()})
+                    line_attrs.update({k: v})
 
             else:
                 p = re.sub('^\s*N(?:ODES)?\s*=\s*', '', p)
 
                 if '=' in p:
-                    k, _, v = p.partition('=')
                     if k and v:
-                        try:
-                            node_attrs.update({k.strip(): ast.literal_eval(v)})
-                        except ValueError:
-                            node_attrs.update({k.strip(): v.strip()})
+                        node_attrs.update({k: v})
                 else:
                     if n:
                         # Add the previous node, with the attrs read so far
@@ -148,7 +157,7 @@ class system:
 
     def __repr__(self):
         '''Object's summary.'''
-        txt = f'System with {len(self.lines.keys())} lines,'
+        txt = f'System with {len(self.lines.keys())} lines, '
         txt += f'and {len(self.comments)} comments.'
         txt += f'\nLines:'
         txt += ', '.join(self.lines.keys())
