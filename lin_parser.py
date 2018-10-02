@@ -49,6 +49,9 @@ class line:
         self.nodes = nodes  # a list of node objects
         self.__dict__.update(**kwargs)
 
+    # This class variable allows to update all lines easily if needed
+    unquoted = ['T', 'F']
+
     @property
     def attrs(self):
         '''Returns a dictionary with user-defined attributes.'''
@@ -68,9 +71,16 @@ class line:
         return txt
 
     def __str__(self):
-        txt_attrs = ', '.join(
-                [f'''{k}={f'"{v}"' if isinstance(v, str) else v}'''
-                 for k, v in self.attrs.items()])
+
+        formatted_attrs = []
+        for k, v in self.attrs.items():
+            if isinstance(v, str) and v not in self.unquoted:
+                f = f'"{v}"'
+            else:
+                f = v
+            formatted_attrs.append(f'{k}={f}')
+
+        txt_attrs = ', '.join(formatted_attrs)
         txt_nodes = ', '.join(str(n) for n in self.nodes)
 
         txt = 'LINE {}'.format(', '.join([txt_attrs, txt_nodes]))
@@ -100,7 +110,7 @@ class line:
             p = parts.pop(0)
 
             # Clean:
-            k, _, v = [ part.strip() for part in p.partition('=')]
+            k, _, v = [part.strip() for part in p.partition('=')]
             try:
                 # For numbers
                 v = ast.literal_eval(v)
