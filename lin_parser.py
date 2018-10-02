@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import re
+import ast
 
 class node:
     """
@@ -79,7 +80,7 @@ class line:
             if attrs_section:
                 k, _, v = p.partition('=')
                 try:
-                    line_attrs.update({k.strip(): eval(v.strip())})
+                    line_attrs.update({k.strip(): ast.literal_eval(v.strip())})
                 except:
                     line_attrs.update({k.strip(): v.strip()})
                 
@@ -89,7 +90,7 @@ class line:
                 if '=' in p:
                     k, _, v = p.partition('=')
                     try:
-                        node_attrs.update({k.strip(): eval(v.strip())})
+                        node_attrs.update({k.strip(): ast.literal_eval(v.strip())})
                     except:
                         node_attrs.update({k.strip(): v.strip()})
                 
