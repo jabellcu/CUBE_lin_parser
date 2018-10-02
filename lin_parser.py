@@ -165,8 +165,8 @@ class system:
             ofile.write(str(self))
 
     @staticmethod
-    def _extract_blocks(string,
-            block_pat=r'(?s)(?:(;.*?)\n|LINE\s*(.*?)(?=LINE|;|\Z))'):
+    def _extract_blocks(
+            string, block_pat=r'(?s)(?:(;.*?)\n|LINE\s*(.*?)(?=LINE|;|\Z))'):
         '''Returns a list of tuples [(comment, line), (), ...] for each
         record. Returns an empty string for comments or lines not found in
         each record.'''
@@ -178,7 +178,7 @@ class system:
     def from_string(string):
 
         blocks = system._extract_blocks(string)
-        
+
         content = []
         for comment_txt, line_txt in blocks:
             if comment_txt:
