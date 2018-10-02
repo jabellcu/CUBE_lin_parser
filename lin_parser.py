@@ -52,10 +52,10 @@ class line:
         return [node for node in self.nodes if node.stopping]
 
     def __str__(self):
-        msg = 'Line with {} nodes (of which {} are stops).'.format(
+        txt = 'Line with {} nodes (of which {} are stops).'.format(
                 len(self.nodes), len(self.stops))
-        msg += f'\n{self.attrs}'
-        return msg
+        txt += f'\n{self.attrs}'
+        return txt
 
     @staticmethod
     def from_string(string):
@@ -121,11 +121,15 @@ class system:
     def __init__(self, lines):
         self.lines = lines
 
-    def __str__(self):
-        msg = f'System with {len(self.lines.keys())} lines.'
+    def __repr__(self):
+        txt = f'System with {len(self.lines.keys())} lines.'
         if hasattr(self, 'comments'):
-            msg += f'\n{self.comments}'
-        return msg
+            txt += f'\n{self.comments}'
+        return txt
+
+    def __str__(self):
+        '''Representation as the file itself'''
+        pass
 
     @staticmethod
     def _extract_lines(string, line_pat=r'(?s)LINE (.*?)(?=LINE|;|\Z)'):
