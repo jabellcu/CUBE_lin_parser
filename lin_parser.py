@@ -85,7 +85,7 @@ class line:
                     line_attrs.update({k.strip(): v.strip()})
                 
             else:
-                p = re.sub('^N(?:ODES)?\s*=\s*', '', p)
+                p = re.sub('^\s*N(?:ODES)?\s*=\s*', '', p)
                 
                 if '=' in p:
                     k, _, v = p.partition('=')
