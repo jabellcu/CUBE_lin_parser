@@ -201,7 +201,7 @@ class system:
 
     @staticmethod
     def _extract_blocks(
-            string, block_pat=r'(?s)(?:(;.*?)\n|LINE\s*(.*?)(?=LINE|;|\Z))'):
+            string, block_pat=r'(?s)(?:(;.*?|\n\s*)\n|LINE\s*(.*?)(?=\n*LINE|;|\Z))'):
         '''Returns a list of tuples [(comment, line), (), ...] for each
         record. Returns an empty string for comments or lines not found in
         each record.'''
