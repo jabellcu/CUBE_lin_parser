@@ -135,57 +135,57 @@ class system:
     Simple system class. A system is a number of lines.
     """
 
-    def __init__(self, lines):
-        self.lines = lines
+    def __init__(self, content):
+        self.content = content
+
+    @property
+    def comments(self):
+        return [x for x in self.content if isinstance(x, str)]
+
+    @property
+    def lines(self):
+        return {x.NAME: x for x in self.content if isinstance(x, line)}
 
     def __repr__(self):
         '''Object's summary.'''
-        txt = f'System with {len(self.lines.keys())} lines.'
-        if hasattr(self, 'comments'):
-            txt += f'\n{self.comments}'
+        txt = f'System with {len(self.lines.keys())} lines:'
+        txt += '\n'.join(self.lines.keys())
+        txt += '\n'.join(self.comments)
         return txt
 
     def __str__(self):
         '''Representation as the file itself.'''
-        if hasattr(self, 'comments'):
-            txt = '\n'.join(self.comments)
-        else:
-            txt = ''
-        txt += '\n'.join([str(ln) for ln in self.lines.values()])
-        return txt
+        return '\n'.join([str(x) for x in self.content])
 
     def save(self, path):
         with open(path, 'w') as ofile:
             ofile.write(str(self))
 
     @staticmethod
-    def _extract_lines(string, line_pat=r'(?s)LINE (.*?)(?=LINE|;|\Z)'):
-        line_re = re.compile(line_pat)
-
-        records = line_re.findall(string)
-        lines = set([line.from_string(r) for r in records])
-        # Assumes all lines have a NAME, and that this is unique.
-        lines = {l.NAME: l for l in lines}
-
-        return lines
-
-    @staticmethod
-    def _extract_comments(string, comment_pat=r'(?s);.*?(?=LINE|\Z)'):
-        comment_re = re.compile(comment_pat)
-
-        comments = comment_re.findall(string)
-
-        return comments
+    def _extract_blocks(string,
+            block_pat=r'(?s)(?:(;.*?)\n|LINE\s*(.*?)(?=LINE|;|\Z))'):
+        '''Returns a list of tuples [(comment, line), (), ...] for each
+        record. Returns an empty string for comments or lines not found in
+        each record.'''
+        block_re = re.compile(block_pat)
+        blocks = block_re.findall(string)
+        return blocks
 
     @staticmethod
     def from_string(string):
 
-        lines = system._extract_lines(string)
-        comments = system._extract_comments(string)
+        blocks = system._extract_blocks(string)
+        
+        content = []
+        for comment_txt, line_txt in blocks:
+            if comment_txt:
+                content.append(comment_txt)
 
-        s = system(lines)
-        if comments:
-            s.comments = comments
+            if line_txt:
+                ln = line.from_string(line_txt)
+                content.append(ln)
+
+        s = system(content)
 
         return s
 
