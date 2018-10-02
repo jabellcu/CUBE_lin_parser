@@ -154,6 +154,10 @@ class system:
         txt += '\n'.join([str(ln) for ln in self.lines.values()])
         return txt
 
+    def save(self, path):
+        with open(path, 'w') as ofile:
+            ofile.write(str(self))
+
     @staticmethod
     def _extract_lines(string, line_pat=r'(?s)LINE (.*?)(?=LINE|;|\Z)'):
         line_re = re.compile(line_pat)
