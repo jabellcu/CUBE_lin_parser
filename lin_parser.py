@@ -148,8 +148,11 @@ class system:
 
     def __repr__(self):
         '''Object's summary.'''
-        txt = f'System with {len(self.lines.keys())} lines:'
-        txt += '\n'.join(self.lines.keys())
+        txt = f'System with {len(self.lines.keys())} lines,'
+        txt += f'and {len(self.comments)} comments.'
+        txt += f'\nLines:'
+        txt += ', '.join(self.lines.keys())
+        txt += f'\nComments:'
         txt += '\n'.join(self.comments)
         return txt
 
