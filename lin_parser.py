@@ -185,23 +185,49 @@ class system:
         '''Object's summary.'''
         txt = f'System with {len(self.lines.keys())} lines, '
         txt += f'and {len(self.comments)} comments.'
-        txt += f'\nLines:'
+        txt += f'\nLines:\n'
         txt += ', '.join(self.lines.keys())
-        txt += f'\nComments:'
+        txt += f'\nComments:\n'
         txt += '\n'.join(self.comments)
         return txt
 
-    def __str__(self):
-        '''Representation as the file itself.'''
-        return '\n'.join([str(x) for x in self.content])
+    def __str__(self, sort=False, comments=True):
+        '''Representation as the file itself.
+            sort: if False, outputs is sorted with the same structure as
+                  input content. If True, comments are first, then all lines
+                  in NAME order.'''
 
-    def save(self, path):
+        if sort:
+            sorted_lines = [str(self.lines[ln]) for ln in sorted(self.lines)]
+            txt_lines = '\n'.join(sorted_lines)
+
+            if comments:
+                txt_comments = [c for c in self.comments]
+                txt = '\n'.join([txt_comments, txt_lines])
+
+            else:
+                txt = txt_lines
+
+        else:
+            if comments:
+                txt_content = [str(x) for x in self.content]
+
+            else:
+                txt_content = [str(x) for x in self.content
+                               if not isinstance(x, str)]
+
+            txt = '\n'.join(txt_content)
+
+        return txt
+
+    def save(self, path, sort=False):
         with open(path, 'w') as ofile:
-            ofile.write(str(self))
+            ofile.write(self.__str__(sort=sort))
 
     @staticmethod
     def _extract_blocks(
-            string, block_pat=r'(?s)(?:(;.*?|\n\s*)\n|LINE\s*(.*?)(?=\n*LINE|;|\Z))'):
+            string,
+            block_pat=r'(?s)(?:(;.*?|\n\s*)\n|LINE\s+(.*?)(?=\n*LINE|;|\Z))'):
         '''Returns a list of tuples [(comment, line), (), ...] for each
         record. Returns an empty string for comments or lines not found in
         each record.'''
