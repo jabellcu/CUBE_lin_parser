@@ -105,15 +105,22 @@ class line:
         return txt
 
     @staticmethod
-    def from_string(string):
+    def from_string(string, potential_seps=[' ', '\t', ',']):
 
         # Clean first:
         string = string.replace('\n', '')
         string = re.sub(r'\ALINE\s+', '', string)
 
+        # Guess the separator as the most common of potential separators:
+        formatted = re.sub('[=,][\s\n\t]+', ',', string)  # clean
+        # Accounts for multiple separators.
+        seps_count = [len(re.findall(f'{sep}+', formatted))
+                      for sep in potential_seps]
+        sep = potential_seps[seps_count.index(max(seps_count))]
+
         # src for this amazing magic:
         # https://stackoverflow.com/a/16710842/2802352
-        part_pat = r'(?:[^,"]|"(?:\\.|[^"])*")+'
+        parts_pat = f'''(?:[^{sep}"]|[^{sep}']|["'](?:\\.|[^"])*["'])+'''
         parts = re.findall(parts_pat, string)
 
         nodes = []
