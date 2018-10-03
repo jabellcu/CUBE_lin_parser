@@ -107,11 +107,6 @@ class line:
     @staticmethod
     def from_string(string, potential_seps=[' ', '\t', ',']):
 
-        # Clean first:
-        string = string.replace('\n', '')
-        string = string.replace('\x1a', '')  # EOF windows >_<
-        string = re.sub(r'\ALINE\s+', '', string)
-
         # Guess the separator as the most common of potential separators:
         formatted = re.sub('[=,][\s\n\t]+', ',', string)  # clean
         # Accounts for multiple separators.
@@ -119,9 +114,17 @@ class line:
                       for sep in potential_seps]
         sep = potential_seps[seps_count.index(max(seps_count))]
 
+        # Clean:
+        string = string.replace('\n', '')
+        string = string.replace('\x1a', '')  # EOF windows >_<
+        string = re.sub(r'\ALINE\s+', '', string)
+        string = re.sub('[\s,]*\Z', '', string)
+        if sep == ' ':
+            string = re.sub(f'{sep}*={sep}*', '=', string)
+
         # src for this amazing magic:
         # https://stackoverflow.com/a/16710842/2802352
-        parts_pat = f'''(?:["'](?:\\.|[^"'])*["']|[^{sep}"]|[^{sep}'])+'''
+        parts_pat = f'''(?:["](?:\\.|[^"])*["]|['](?:\\.|[^'])*[']|[^{sep}"]|[^{sep}'])+'''
         parts = re.findall(parts_pat, string)
 
         nodes = []
