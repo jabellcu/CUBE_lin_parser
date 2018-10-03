@@ -77,7 +77,7 @@ class line:
         formatted_attrs = []
         for k, v in self.attrs.items():
             if isinstance(v, str) and v not in self.unquoted:
-                f = f'"{v}"'
+                f = repr(v)  # This will enclose in the right quotes
             else:
                 f = v
             formatted_attrs.append(f'{k}={f}')
@@ -113,7 +113,8 @@ class line:
 
         # src for this amazing magic:
         # https://stackoverflow.com/a/16710842/2802352
-        parts = re.findall(r'(?:[^,"]|"(?:\\.|[^"])*")+', string)
+        part_pat = r'(?:[^,"]|"(?:\\.|[^"])*")+'
+        parts = re.findall(parts_pat, string)
 
         nodes = []
         line_attrs = {}
@@ -131,9 +132,7 @@ class line:
                 # For numbers
                 v = ast.literal_eval(v)
             except (ValueError, SyntaxError) as e:
-                # For strings, make sure they are enclosed in double quotes:
-                v = f'"{v}"'
-                v = ast.literal_eval(v)
+                v = str(v)
 
             if bool(re.search('N(?:ODES)?\s*=', p)):
                 attrs_section = False
