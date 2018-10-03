@@ -109,6 +109,7 @@ class line:
 
         # Clean first:
         string = string.replace('\n', '')
+        string = string.replace('\x1a', '')  # EOF windows >_<
         string = re.sub(r'\ALINE\s+', '', string)
 
         # Guess the separator as the most common of potential separators:
@@ -120,7 +121,7 @@ class line:
 
         # src for this amazing magic:
         # https://stackoverflow.com/a/16710842/2802352
-        parts_pat = f'''(?:[^{sep}"]|[^{sep}']|["'](?:\\.|[^"])*["'])+'''
+        parts_pat = f'''(?:["'](?:\\.|[^"'])*["']|[^{sep}"]|[^{sep}'])+'''
         parts = re.findall(parts_pat, string)
 
         nodes = []
@@ -135,13 +136,15 @@ class line:
 
             # Clean:
             k, _, v = [part.strip() for part in p.partition('=')]
+            v = re.sub('[\s,]*\Z', '', v)
+
             try:
                 # For numbers
                 v = ast.literal_eval(v)
             except (ValueError, SyntaxError) as e:
                 v = str(v)
 
-            if bool(re.search('N(?:ODES)?\s*=', p)):
+            if bool(re.search('\A\s*N(?:ODES)?\s*=', p)):
                 attrs_section = False
 
             if attrs_section:
@@ -149,7 +152,7 @@ class line:
                     line_attrs.update({k: v})
 
             else:
-                p = re.sub('^\s*N(?:ODES)?\s*=\s*', '', p)
+                p = re.sub('\A\s*N(?:ODES)?\s*=\s*', '', p)
 
                 if '=' in p:
                     if k and v:
@@ -158,13 +161,13 @@ class line:
                     if n:
                         # Add the previous node, with the attrs read so far
                         nodes.append(node(n, **node_attrs))
-                        node_attrs = {}
-
-                        if not parts:
-                            # Add the last node if there are no more attrs
-                            nodes.append(node(p))
+                        node_attrs = {}  # reset
 
                     n = p  # Set the new node for future attrs to be read
+
+        else:
+            # Add the last node
+            nodes.append(node(n, **node_attrs))
 
         ln = line(nodes, **line_attrs)
 
