@@ -231,7 +231,7 @@ class system:
         txt = f'System with {len(self.lines.keys())} lines, '
         txt += f'and {len(self.comments)} comments.'
         txt += f'\nLines:\n'
-        txt += ', '.join(self.lines.keys())
+        txt += ', '.join([str(k) for k in self.lines])  # some might be ints
         txt += f'\nComments:\n'
         txt += '\n'.join(self.comments)
         return txt
