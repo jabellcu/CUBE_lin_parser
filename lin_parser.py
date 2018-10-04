@@ -30,13 +30,25 @@ class node:
         return '{}{}, {}'.format('-' if not self.stopping else '', self.ID,
                                  self.attrs)
 
-    def __str__(self):
+    def __str__(self, attrs=None):
+        '''attrs: list of attributes to include.'''
+
         txt_node = '{}{}'.format('-' if not self.stopping else '', self.ID,)
+
         if self.attrs:
-            txt_attrs = ', '.join([f'{k}={v}' for k, v in self.attrs.items()])
-            return ', '.join([txt_node, txt_attrs])
-        else:
-            return txt_node
+            if attrs:
+                attrs = {k:v for k, v in self.attrs.items() if k in attrs}
+            else:
+                attrs = self.attrs
+
+            formatted_attrs = [f'{k}={v}' for k, v in attrs.items()]
+
+            txt_attrs = ', '.join(formatted_attrs)
+
+            if txt_attrs:
+                txt_node = ', '.join([txt_node, txt_attrs])
+
+        return txt_node
 
 
 class line:
@@ -71,9 +83,10 @@ class line:
         txt += f'\n{self.attrs}'
         return txt
 
-    def __str__(self):
+    def __str__(self, node_attrs=None):
+        '''attrs: list of node attributes to include.'''
 
-        # String attributes are quotes, with exceptions
+        # String attributes are quoted, with exceptions
         formatted_attrs = []
         for k, v in self.attrs.items():
             if isinstance(v, str) and v not in self.unquoted:
@@ -84,17 +97,25 @@ class line:
 
         txt_attrs = ', '.join(formatted_attrs)
 
-        # First nodes and nodes after attributes are labeled
+        # First nodes, and nodes after attributes, are labeled
         formatted_nodes = []
         first_node = True
         for n in self.nodes:
             if first_node:
-                formatted_nodes.append(f'{self.NodeLabel}={n}')
+                formatted_nodes.append('{}={}'.format(
+                    self.NodeLabel, n.__str__(attrs=node_attrs)))
                 first_node = False
             else:
-                formatted_nodes.append(f'{n}')
+                formatted_nodes.append(n.__str__(attrs=node_attrs))
 
-            if n.attrs:
+            if node_attrs:
+                n_attrs = {k:v for k, v in n.attrs.items()
+                              if k in node_attrs}
+            else:
+                n_attrs = n.attrs
+
+            if n_attrs:
+                # node has attributes printed, reset the flag:
                 first_node = True
 
         txt_nodes = ', '.join(formatted_nodes)
@@ -215,14 +236,20 @@ class system:
         txt += '\n'.join(self.comments)
         return txt
 
-    def __str__(self, sort=False, comments=True):
+    def __str__(self, sort=False, comments=True, node_attrs=None):
         '''Representation as the file itself.
+
             sort: if False, outputs is sorted with the same structure as
                   input content. If True, comments are first, then all lines
-                  in NAME order.'''
+                  in NAME order.
+
+            comments: output comments only if True.
+
+            node_attrs: list of node attributes to include.'''
 
         if sort:
-            sorted_lines = [str(self.lines[ln]) for ln in sorted(self.lines)]
+            sorted_lines = [self.lines[ln].__str__(node_attrs=node_attrs)
+                            for ln in sorted(self.lines)]
             txt_lines = '\n'.join(sorted_lines)
 
             if comments:
@@ -234,19 +261,23 @@ class system:
 
         else:
             if comments:
-                txt_content = [str(x) for x in self.content]
+                txt_content = [x.__str__(node_attrs=node_attrs)
+                               if not isinstance(x, str) else str(x)
+                               for x in self.content]
 
             else:
-                txt_content = [str(x) for x in self.content
+                txt_content = [x.__str__(node_attrs=node_attrs)
+                               for x in self.content
                                if not isinstance(x, str)]
 
             txt = '\n'.join(txt_content)
 
         return txt
 
-    def save(self, path, sort=False):
+    def save(self, path, sort=False, comments=True, node_attrs=None):
         with open(path, 'w') as ofile:
-            ofile.write(self.__str__(sort=sort))
+            ofile.write(self.__str__(sort=sort, comments=comments,
+                                     node_attrs=node_attrs))
 
     @staticmethod
     def _extract_blocks(
