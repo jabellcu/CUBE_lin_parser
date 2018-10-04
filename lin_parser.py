@@ -138,8 +138,8 @@ class line:
             p = parts.pop(0)
 
             # Clean:
+            p = re.sub('[\s,]*\Z', '', p)
             k, _, v = [part.strip() for part in p.partition('=')]
-            v = re.sub('[\s,]*\Z', '', v)
 
             try:
                 # For numbers
@@ -155,12 +155,15 @@ class line:
                     line_attrs.update({k: v})
 
             else:
+                # Repalce the node label
                 p = re.sub('\A\s*N(?:ODES)?\s*=\s*', '', p)
 
                 if '=' in p:
+                    # Still has '=', must be an attribute:
                     if k and v:
                         node_attrs.update({k: v})
                 else:
+                    # IT is a node:
                     if n:
                         # Add the previous node, with the attrs read so far
                         nodes.append(node(n, **node_attrs))
@@ -169,8 +172,9 @@ class line:
                     n = p  # Set the new node for future attrs to be read
 
         else:
-            # Add the last node
-            nodes.append(node(n, **node_attrs))
+            if n:
+                # Add the last node (if it is not empty)
+                nodes.append(node(n, **node_attrs))
 
         ln = line(nodes, **line_attrs)
 
