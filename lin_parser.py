@@ -127,6 +127,8 @@ class line:
         parts_pat = f'''(?:["](?:\\.|[^"])*["]|['](?:\\.|[^'])*[']|[^{sep}"]|[^{sep}'])+'''
         parts = re.findall(parts_pat, string)
 
+        NodeLabel_pat = r'\A\s*N(?:ODES)?\b'
+
         nodes = []
         line_attrs = {}
         node_attrs = {}
@@ -147,7 +149,7 @@ class line:
             except (ValueError, SyntaxError) as e:
                 v = str(v)
 
-            if bool(re.search('\A\s*N(?:ODES)?\s*=', p)):
+            if bool(re.search(f'{NodeLabel_pat}\s*=\s*', p)):
                 attrs_section = False
 
             if attrs_section:
@@ -156,12 +158,18 @@ class line:
 
             else:
                 # Repalce the node label
-                p = re.sub('\A\s*N(?:ODES)?\s*=\s*', '', p)
+                p = re.sub(f'{NodeLabel_pat}\s*=\s*', '', p)
 
                 if '=' in p:
+                    if bool(re.search(f'{NodeLabel_pat}', k)):
+                        msg = f'Node declaration in attribute "{k}: {v}"'
+                        msg += f'in node {n}, line:\n{line_attrs}'
+                        raise AssertionError(msg)
+
                     # Still has '=', must be an attribute:
                     if k and v:
                         node_attrs.update({k: v})
+
                 else:
                     # IT is a node:
                     if n:
