@@ -2,6 +2,7 @@
 
 import re
 import ast
+import pandas as pd
 
 
 class node:
@@ -37,7 +38,7 @@ class node:
 
         if self.attrs:
             if attrs:
-                attrs = {k:v for k, v in self.attrs.items() if k in attrs}
+                attrs = {k: v for k, v in self.attrs.items() if k in attrs}
             else:
                 attrs = self.attrs
 
@@ -109,8 +110,8 @@ class line:
                 formatted_nodes.append(n.__str__(attrs=node_attrs))
 
             if node_attrs:
-                n_attrs = {k:v for k, v in n.attrs.items()
-                              if k in node_attrs}
+                n_attrs = {k: v for k, v in n.attrs.items()
+                           if k in node_attrs}
             else:
                 n_attrs = n.attrs
 
@@ -283,6 +284,21 @@ class system:
         with open(path, 'w') as ofile:
             ofile.write(self.__str__(sort=sort, comments=comments,
                                      node_attrs=node_attrs))
+
+    @property
+    def df(self):
+        '''Returns a dataframe with the attributes for each line.'''
+
+        # Assume lines start on 1:
+        data = {i: ln.attrs for i, ln in enumerate(self.lines.values(), 1)}
+        df = pd.DataFrame.from_records(data).T
+
+        # stops and nodes are objects!
+        additional_attrs = 'stop_seq stops nodes'.split()
+        for attr in additional_attrs:
+            df[attr] = [getattr(ln, attr) for ln in self.lines.values()]
+
+        return df
 
     @staticmethod
     def _extract_blocks(
