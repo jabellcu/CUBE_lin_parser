@@ -125,6 +125,11 @@ class line:
 
         return txt
 
+    @property
+    def stop_seq(self, sep='_'):
+        '''Returns a concatenation of lines's stops.'''
+        return sep.join([str(n.ID) for n in self.stops])
+
     @staticmethod
     def from_string(string, potential_seps=[' ', '\t', ',']):
 
