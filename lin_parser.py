@@ -221,8 +221,11 @@ class system:
     Simple system class. A system is a number of lines.
     """
 
-    def __init__(self, content):
-        self.content = content
+    def __init__(self, content=None):
+        if content:
+            self.content = content
+        else:
+            self.content = []
 
     @property
     def comments(self):
