@@ -31,16 +31,22 @@ class node:
         return '{}{}, {}'.format('-' if not self.stopping else '', self.ID,
                                  self.attrs)
 
-    def __str__(self, attrs=None):
-        '''attrs: list of attributes to include.'''
+    def __str__(self, **kwargs):
+        '''node_attrs: list of node attributes to include.
+           exclude_node_attrs: list of node attributes to omit.'''
 
         txt_node = '{}{}'.format('-' if not self.stopping else '', self.ID,)
 
         if self.attrs:
-            if attrs:
-                attrs = {k: v for k, v in self.attrs.items() if k in attrs}
+            if node_attrs:
+                attrs = {k: v for k, v in self.attrs.items()
+                         if k in node_attrs}
             else:
                 attrs = self.attrs
+
+            if exclude_node_attrs:
+                attrs = {k:v for k, v in attrs.items()
+                         if k not in exclude_node_attrs}
 
             formatted_attrs = [f'{k}={v}' for k, v in attrs.items()]
 
@@ -84,12 +90,25 @@ class line:
         txt += f'\n{self.attrs}'
         return txt
 
-    def __str__(self, node_attrs=None):
-        '''attrs: list of node attributes to include.'''
+    def __str__(self, **kwargs):
+        '''node_attrs: list of node attributes to include.
+           exclude_node_attrs: list of node attributes to omit.
+           line_attrs: list of line attributes to include.
+           exclude_line_attrs: list of line attributes to omit.'''
 
         # String attributes are quoted, with exceptions
         formatted_attrs = []
-        for k, v in self.attrs.items():
+
+        if line_attrs:
+            l_attrs = {k: v for k, v in self.attrs.items()}
+        else:
+            l_attrs = self.attrs.items()
+
+        if exclude_line_attrs:
+            l_attrs = {k: v for k, v in l_attrs.items()
+                       if k not in exclude_line_attrs}
+
+        for k, v in l_attrs:
             if isinstance(v, str) and v not in self.unquoted:
                 f = repr(v)  # This will enclose in the right quotes
             else:
@@ -104,16 +123,20 @@ class line:
         for n in self.nodes:
             if first_node:
                 formatted_nodes.append('{}={}'.format(
-                    self.NodeLabel, n.__str__(attrs=node_attrs)))
+                    self.NodeLabel, n.__str__(**kwargs)))
                 first_node = False
             else:
-                formatted_nodes.append(n.__str__(attrs=node_attrs))
+                formatted_nodes.append(n.__str__(**kwargs))
 
             if node_attrs:
                 n_attrs = {k: v for k, v in n.attrs.items()
                            if k in node_attrs}
             else:
                 n_attrs = n.attrs
+
+            if exclude_node_attrs:
+                n_attrs = {k: v for k, v in n_attrs.items()
+                           if k not in exclude_node_attrs}
 
             if n_attrs:
                 # node has attributes printed, reset the flag:
@@ -245,7 +268,7 @@ class system:
         txt += '\n'.join(self.comments)
         return txt
 
-    def __str__(self, sort=False, comments=True, node_attrs=None):
+    def __str__(self, sort=False, comments=True, **kwargs):
         '''Representation as the file itself.
 
             sort: if False, outputs is sorted with the same structure as
@@ -254,10 +277,13 @@ class system:
 
             comments: output comments only if True.
 
-            node_attrs: list of node attributes to include.'''
+            node_attrs: list of node attributes to include.
+            exclude_node_attrs: list of node attributes to omit.
+            line_attrs: list of line attributes to include.
+            exclude_line_attrs: list of line attributes to omit.'''
 
         if sort:
-            sorted_lines = [self.lines[ln].__str__(node_attrs=node_attrs)
+            sorted_lines = [self.lines[ln].__str__(**kwargs)
                             for ln in sorted(self.lines)]
             txt_lines = '\n'.join(sorted_lines)
 
@@ -270,12 +296,12 @@ class system:
 
         else:
             if comments:
-                txt_content = [x.__str__(node_attrs=node_attrs)
+                txt_content = [x.__str__(**kwargs)
                                if not isinstance(x, str) else str(x)
                                for x in self.content]
 
             else:
-                txt_content = [x.__str__(node_attrs=node_attrs)
+                txt_content = [x.__str__(**kwargs)
                                for x in self.content
                                if not isinstance(x, str)]
 
@@ -283,10 +309,15 @@ class system:
 
         return txt
 
-    def save(self, path, sort=False, comments=True, node_attrs=None):
+    def save(self, path, sort=False, comments=True,
+             node_attrs=None, exclude_node_attrs=None, 
+             line_attrs=None, exclude_line_attrs=None):
         with open(path, 'w') as ofile:
             ofile.write(self.__str__(sort=sort, comments=comments,
-                                     node_attrs=node_attrs))
+                                     node_attrs=node_attrs,
+                                     exclude_node_attrs=exclude_node_attrsone,
+                                     line_attrs=line_attrs,
+                                     exclude_line_attrs=exclude_line_attrs))
 
     def lines_by_attr(self, attr, val):
         '''Returns a list of lines having a specific value in an attribute.'''
