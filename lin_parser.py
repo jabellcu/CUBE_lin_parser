@@ -288,6 +288,11 @@ class system:
             ofile.write(self.__str__(sort=sort, comments=comments,
                                      node_attrs=node_attrs))
 
+    def lines_by_attr(self, attr, val):
+        lines = [ln for ln in self.lines.values()
+                 if getattr(ln, attr) == val]
+        return lines
+
     @property
     def df(self):
         '''Returns a dataframe with the attributes for each line.'''
