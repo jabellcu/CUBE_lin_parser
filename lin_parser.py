@@ -31,7 +31,7 @@ class node:
         return '{}{}, {}'.format('-' if not self.stopping else '', self.ID,
                                  self.attrs)
 
-    def __str__(self, **kwargs):
+    def __str__(self, node_attrs=None, exclude_node_attrs=None):
         '''node_attrs: list of node attributes to include.
            exclude_node_attrs: list of node attributes to omit.'''
 
@@ -90,7 +90,8 @@ class line:
         txt += f'\n{self.attrs}'
         return txt
 
-    def __str__(self, **kwargs):
+    def __str__(self, line_attrs=None, exclude_line_attrs=None,
+            node_attrs=None, exclude_node_attrs=None):
         '''node_attrs: list of node attributes to include.
            exclude_node_attrs: list of node attributes to omit.
            line_attrs: list of line attributes to include.
@@ -123,10 +124,14 @@ class line:
         for n in self.nodes:
             if first_node:
                 formatted_nodes.append('{}={}'.format(
-                    self.NodeLabel, n.__str__(**kwargs)))
+                    self.NodeLabel, n.__str__(
+                        node_attrs=node_attrs,
+                        exclude_node_attrs=exclude_node_attrs)))
                 first_node = False
             else:
-                formatted_nodes.append(n.__str__(**kwargs))
+                formatted_nodes.append(n.__str__(
+                    node_attrs=node_attrs,
+                    exclude_node_attrs=exclude_node_attrs))
 
             if node_attrs:
                 n_attrs = {k: v for k, v in n.attrs.items()
