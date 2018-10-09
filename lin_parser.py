@@ -101,15 +101,16 @@ class line:
         formatted_attrs = []
 
         if line_attrs:
-            l_attrs = {k: v for k, v in self.attrs.items()}
+            l_attrs = {k: v for k, v in self.attrs.items()
+                       if k in line_attrs}
         else:
-            l_attrs = self.attrs.items()
+            l_attrs = self.attrs
 
         if exclude_line_attrs:
             l_attrs = {k: v for k, v in l_attrs.items()
                        if k not in exclude_line_attrs}
 
-        for k, v in l_attrs:
+        for k, v in l_attrs.items():
             if isinstance(v, str) and v not in self.unquoted:
                 f = repr(v)  # This will enclose in the right quotes
             else:
@@ -320,7 +321,7 @@ class system:
         with open(path, 'w') as ofile:
             ofile.write(self.__str__(sort=sort, comments=comments,
                                      node_attrs=node_attrs,
-                                     exclude_node_attrs=exclude_node_attrsone,
+                                     exclude_node_attrs=exclude_node_attrs,
                                      line_attrs=line_attrs,
                                      exclude_line_attrs=exclude_line_attrs))
 
