@@ -289,9 +289,23 @@ class system:
                                      node_attrs=node_attrs))
 
     def lines_by_attr(self, attr, val):
+        '''Returns a list of lines having a specific value in an attribute.'''
         lines = [ln for ln in self.lines.values()
                  if getattr(ln, attr) == val]
         return lines
+
+    def lines_query(self, qry):
+        '''Returns a list of lines meeting a SQL-like query. This relies on
+        pandas DataFrame query:
+            https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.query.html'''
+        
+        lns_names = self.df.query(qry)['NAME'].tolist()
+
+        if lns_names:
+            lns = [self.lines[n] for n in lns_names]
+            return lns
+        else:
+            return []
 
     @property
     def df(self):
