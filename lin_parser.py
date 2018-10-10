@@ -11,11 +11,11 @@ class node:
     """
 
     def __init__(self, string, **kwargs):
-        string = str(string)
-        self.ID = abs(int(string))
+        self._string = str(string)
+        self.ID = abs(int(self._string.strip()))
         self.__dict__.update(**kwargs)
 
-        if string.startswith('-'):
+        if self._string.strip().startswith('-'):
             self.stopping = False
         else:
             self.stopping = True
@@ -227,7 +227,7 @@ class line:
                         node_attrs.update({k: v})
 
                 else:
-                    # IT is a node:
+                    # It is a node:
                     if n:
                         # Add the previous node, with the attrs read so far
                         nodes.append(node(n, **node_attrs))
