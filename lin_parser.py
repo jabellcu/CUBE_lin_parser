@@ -286,10 +286,11 @@ class system:
 
         for x in self.content:
             if isinstance(x, line):
-                if counts[x.NAME] > 1:
+                name = str(x.NAME)  # Treats int = str
+                if counts[name] > 1:
                     x = x.copy()
-                    newname = f'{x.NAME}_{suffixes[x.NAME]}'
-                    suffixes[x.NAME] += 1
+                    newname = f'{name}_{suffixes[name]}'
+                    suffixes[name] += 1
                     x.NAME = newname
             renamed_content.append(x)
 
@@ -325,9 +326,9 @@ class system:
 
     @property
     def line_names(self):
-        '''Returns a list of line names. Preserves order. May contain
-        duplicates.'''
-        return [x.NAME for x in self.content if isinstance(x, line)]
+        '''Returns a list of line names as strings. Preserves order. May
+        contain duplicates.'''
+        return [str(x.NAME) for x in self.content if isinstance(x, line)]
 
     def __repr__(self):
         '''Object's summary.'''
