@@ -3,6 +3,9 @@
 import re
 import ast
 import pandas as pd
+from collections import Counter
+from warnings import warn
+from copy import deepcopy
 
 
 class node:
@@ -45,7 +48,7 @@ class node:
                 attrs = self.attrs
 
             if exclude_node_attrs:
-                attrs = {k:v for k, v in attrs.items()
+                attrs = {k: v for k, v in attrs.items()
                          if k not in exclude_node_attrs}
 
             formatted_attrs = [f'{k}={v}' for k, v in attrs.items()]
@@ -56,6 +59,9 @@ class node:
                 txt_node = ', '.join([txt_node, txt_attrs])
 
         return txt_node
+
+    def copy(self):
+        return deepcopy(self)
 
 
 class line:
@@ -91,7 +97,7 @@ class line:
         return txt
 
     def __str__(self, line_attrs=None, exclude_line_attrs=None,
-            node_attrs=None, exclude_node_attrs=None):
+                node_attrs=None, exclude_node_attrs=None):
         '''node_attrs: list of node attributes to include.
            exclude_node_attrs: list of node attributes to omit.
            line_attrs: list of line attributes to include.
@@ -244,6 +250,9 @@ class line:
 
         return ln
 
+    def copy(self):
+        return deepcopy(self)
+
 
 class system:
     """
@@ -256,16 +265,73 @@ class system:
         else:
             self.content = []
 
+    def _warn_if_dups(self, additional_info=None):
+        '''Raises a warning if there lines with duplicated NAME in the
+        system.'''
+        if not self.NAME_unique:
+            msg = "Several lines have the same NAME."
+            if additional_info:
+                msg += f' {additional_info}'
+            warn(msg)
+
+    @property
+    def content_dups_renamed(self):
+        '''Returns the system's content, but with lines with duplicated NAMEs
+        renamed. Renamed lines will have its NAME appended a number N, where N
+        is an increasing sequence.'''
+
+        renamed_content = []
+        counts = Counter(self.line_names)
+        suffixes = {k: 1 for k in counts}
+
+        for x in self.content:
+            if isinstance(x, line):
+                if counts[x.NAME] > 1:
+                    x = x.copy()
+                    newname = f'{x.NAME}_{suffixes[x.NAME]}'
+                    suffixes[x.NAME] += 1
+                    x.NAME = newname
+            renamed_content.append(x)
+
+        return renamed_content
+
+    def rename_dups(self):
+        '''Changes the system's content to avoid lines with duplicated
+        NAMEs.'''
+        self.content = self.content_dups_renamed
+
+    @property
+    def NAME_unique(self):
+        '''Returns True if lines' property "NAME" is a unique
+        identificator.'''
+        names = self.line_names
+        most_common, count = Counter(names).most_common(1)[0]
+        return not count > 1
+
     @property
     def comments(self):
         return [x for x in self.content if isinstance(x, str)]
 
     @property
     def lines(self):
+        msg = 'Only the latest line is displayed for conflicting NAMEs.'
+        self._warn_if_dups(additional_info=msg)
         return {x.NAME: x for x in self.content if isinstance(x, line)}
+
+    @property
+    def lines_dups_renamed(self):
+        return {x.NAME: x for x in self.content_dups_renamed
+                if isinstance(x, line)}
+
+    @property
+    def line_names(self):
+        '''Returns a list of line names. Preserves order. May contain
+        duplicates.'''
+        return [x.NAME for x in self.content if isinstance(x, line)]
 
     def __repr__(self):
         '''Object's summary.'''
+        self._warn_if_dups()
         txt = f'System with {len(self.lines.keys())} lines, '
         txt += f'and {len(self.comments)} comments.'
         txt += f'\nLines:\n'
@@ -274,7 +340,7 @@ class system:
         txt += '\n'.join(self.comments)
         return txt
 
-    def __str__(self, sort=False, comments=True, **kwargs):
+    def __str__(self, sort=False, comments=True, rename_dups=False, **kwargs):
         '''Representation as the file itself.
 
             sort: if False, outputs is sorted with the same structure as
@@ -282,15 +348,26 @@ class system:
                   in NAME order.
 
             comments: output comments only if True.
+            rename_dups: ...
 
             node_attrs: list of node attributes to include.
             exclude_node_attrs: list of node attributes to omit.
             line_attrs: list of line attributes to include.
             exclude_line_attrs: list of line attributes to omit.'''
 
+        if not rename_dups:
+            self._warn_if_dups()
+
+        content = self.content
+        lines = self.lines
+        # Use only if there are duplicates. Makes code more compact:
+        if rename_dups and not self.NAME_unique:
+            content = self.content_dups_renamed
+            lines = self.lines_dups_renamed
+
         if sort:
-            sorted_lines = [self.lines[ln].__str__(**kwargs)
-                            for ln in sorted(self.lines)]
+            sorted_lines = [lines[ln].__str__(**kwargs)
+                            for ln in sorted(lines)]
             txt_lines = '\n'.join(sorted_lines)
 
             if comments:
@@ -304,26 +381,34 @@ class system:
             if comments:
                 txt_content = [x.__str__(**kwargs)
                                if not isinstance(x, str) else str(x)
-                               for x in self.content]
+                               for x in content]
 
             else:
                 txt_content = [x.__str__(**kwargs)
-                               for x in self.content
-                               if not isinstance(x, str)]
+                               for x in content if not isinstance(x, str)]
 
             txt = '\n'.join(txt_content)
 
         return txt
 
+    def copy(self):
+        return deepcopy(self)
+
     def save(self, path, sort=False, comments=True,
-             node_attrs=None, exclude_node_attrs=None, 
-             line_attrs=None, exclude_line_attrs=None):
+             node_attrs=None, exclude_node_attrs=None,
+             line_attrs=None, exclude_line_attrs=None, rename_dups=True):
+
+        if not self.NAME_unique and rename_dups:
+            msg = 'Duplicated NAMES will be renamed.'
+            self._warn_if_dups(additional_info=msg)
+
         with open(path, 'w') as ofile:
             ofile.write(self.__str__(sort=sort, comments=comments,
                                      node_attrs=node_attrs,
                                      exclude_node_attrs=exclude_node_attrs,
                                      line_attrs=line_attrs,
-                                     exclude_line_attrs=exclude_line_attrs))
+                                     exclude_line_attrs=exclude_line_attrs,
+                                     rename_dups=rename_dups))
 
     def lines_by_attr(self, attr, val):
         '''Returns a list of lines having a specific value in an attribute.'''
@@ -335,7 +420,7 @@ class system:
         '''Returns a list of lines meeting a SQL-like query. This relies on
         pandas DataFrame query:
             https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.query.html'''
-        
+
         lns_names = self.df.query(qry)['NAME'].tolist()
 
         if lns_names:
