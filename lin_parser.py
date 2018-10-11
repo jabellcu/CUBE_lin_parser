@@ -332,10 +332,11 @@ class system:
     def __repr__(self):
         '''Object's summary.'''
         self._warn_if_dups()
-        txt = f'System with {len(self.lines.keys())} lines, '
+        # Usinf self.line_names avoids triggering further warnings:
+        txt = f'System with {len(self.line_names)} lines, '
         txt += f'and {len(self.comments)} comments.'
         txt += f'\nLines:\n'
-        txt += ', '.join([str(k) for k in self.lines])  # some might be ints
+        txt += ', '.join([str(k) for k in self.line_names])  # if int NAMEs
         txt += f'\nComments:\n'
         txt += '\n'.join(self.comments)
         return txt
@@ -358,26 +359,31 @@ class system:
         if not rename_dups:
             self._warn_if_dups()
 
-        content = self.content
-        lines = self.lines
-        # Use only if there are duplicates. Makes code more compact:
-        if rename_dups and not self.NAME_unique:
-            content = self.content_dups_renamed
-            lines = self.lines_dups_renamed
-
         if sort:
+
+            lines = self.lines
+            # Use only if there are duplicates. Makes code more compact:
+            if rename_dups and not self.NAME_unique:
+                lines = self.lines_dups_renamed
+
             sorted_lines = [lines[ln].__str__(**kwargs)
                             for ln in sorted(lines)]
             txt_lines = '\n'.join(sorted_lines)
 
             if comments:
-                txt_comments = [c for c in self.comments]
+                txt_comments = '\n'.join([c for c in self.comments])
                 txt = '\n'.join([txt_comments, txt_lines])
 
             else:
                 txt = txt_lines
 
         else:
+
+            content = self.content
+            # Use only if there are duplicates. Makes code more compact:
+            if rename_dups and not self.NAME_unique:
+                content = self.content_dups_renamed
+
             if comments:
                 txt_content = [x.__str__(**kwargs)
                                if not isinstance(x, str) else str(x)
