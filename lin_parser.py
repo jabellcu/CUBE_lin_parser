@@ -82,7 +82,7 @@ class line:
     def attrs(self):
         '''Returns a dictionary with user-defined attributes.'''
         return {k: v for k, v in self.__dict__.items()
-                if '_' not in k and 'nodes' != k}
+                if 'nodes' != k and not k.startswith('_')}
 
     @property
     def stops(self):
