@@ -161,6 +161,22 @@ class line:
 
         return txt
 
+    def is_node(self, n):
+        '''Returns True if n is one of the line's nodes.'''
+        if isinstance(n, node):
+            ID = n.ID
+        else:
+            ID = n
+        return ID in [n.ID for n in self.nodes]
+
+    def is_stop(self, n):
+        '''Returns True if line stops at n.'''
+        if isinstance(n, node):
+            ID = n.ID
+        else:
+            ID = n
+        return ID in [n.ID for n in self.stops]
+
     @property
     def stop_seq(self, sep='_'):
         '''Returns a concatenation of lines's stops.'''
