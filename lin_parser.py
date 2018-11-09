@@ -310,6 +310,11 @@ class system:
                     x.NAME = newname
             renamed_content.append(x)
 
+        #re-test (recursive)
+        ren_sys = system(renamed_content)
+        if not ren_sys.NAME_unique:
+            renamed_content = ren_sys.content_dups_renamed
+
         return renamed_content
 
     def rename_dups(self):
