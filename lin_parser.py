@@ -483,8 +483,8 @@ class system:
         blocks = block_re.findall(string)
         return blocks
 
-    @staticmethod
-    def from_string(string):
+    @classmethod
+    def from_string(cls, string):
 
         blocks = system._extract_blocks(string)
 
@@ -497,15 +497,15 @@ class system:
                 ln = line.from_string(line_txt)
                 content.append(ln)
 
-        s = system(content)
+        sys = cls(content)
 
-        return s
+        return sys
 
-    @staticmethod
-    def read_file(path):
+    @classmethod
+    def read_file(cls, path):
         with open(path, 'r') as ifile:
             content = ifile.read()
 
-        s = system.from_string(content)
+        sys = cls.from_string(content)
 
-        return s
+        return sys
