@@ -19,4 +19,6 @@ a \*.lin file and used in CUBE.
 
 Please observe test_lin_parser.py.
 Add tests for new features or changes you make, and run the test suit bebore
-submitting a pull request.
+submitting a pull request:
+
+    $ python test_lin_parser.py
